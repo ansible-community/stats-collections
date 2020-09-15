@@ -11,7 +11,7 @@ these fields:
 | *Site*  | The base URL for the Git repo
 | *Org*   | The organisation (optional)
 | *Repo*  | The repository
-|* *NewCollection* | If `TRUE` then don't try to find the history of this collection in `ansible/ansible` |
+| *NewCollection* | If `TRUE` then don't try to find the history of this collection in `ansible/ansible` |
 | *Regex* | Used to find (roughly) where the Collection used to live in `ansible/ansible |
 | *MergeKey* | If present, combines several repos into a single graph |
 
