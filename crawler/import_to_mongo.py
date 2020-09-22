@@ -19,7 +19,7 @@ parser.add_argument('file', type=argparse.FileType('r'), default=sys.stdin,
                             nargs='?')
 args = parser.parse_args()
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+myclient = pymongo.MongoClient("mongodb://test:test@172.17.0.1:27017/ansible_collections")
 mydb = myclient["ansible_collections"]
 mycol = mydb[args.collection]
 

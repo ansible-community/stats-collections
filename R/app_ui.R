@@ -27,13 +27,14 @@ ui_header <- function() {
 
 #' @import shinydashboard
 #' @importFrom shinydashboard dashboardBody
+#' @importFrom plotly plotlyOutput
 #' @noRd
 ui_body <- function() {
   dashboardBody(
     fluidRow(
       column(width = 10,
              box(width = NULL, solidHeader = TRUE,
-                 plotOutput("survival_plot", height = 600)
+                 plotOutput("survival_plot", height = 550)
              ),
              column(width = 4,
                     box(width = NULL,
@@ -47,7 +48,7 @@ ui_body <- function() {
              ),
              column(width = 4,
                     box(width = NULL,
-                        plotOutput("bar_plot", height = 250)
+                        plotlyOutput("bar_plot", height = 250)
                     )
              )
       ),
@@ -59,16 +60,13 @@ ui_body <- function() {
                              ),
                              selected = 'ttclose'
                  ),
+                 p(class = "text-muted",
+                   br(),
+                   "Time-to-comment & time-to-release are still TODO"
+                 )
              ),
              box(width = NULL, status = "warning",
-                 selectInput("repo", "Collection",
-                             choices = c(
-                               'community.general',
-                               'grafana',
-                               'ios'
-                             ),
-                             selected = "grafana"
-                 ),
+                 uiOutput("repoSelect"),
                  uiOutput("timeSinceLastUpdate"),
                  p(class = "text-muted",
                    br(),
