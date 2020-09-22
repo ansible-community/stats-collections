@@ -3,8 +3,11 @@
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
 #' @import shiny shinipsum ggplot2 plotly
-#' @importFrom dplyr select mutate
+#' @importFrom dplyr select mutate across
 #' @importFrom purrr map
+#' @importFrom survival survfit Surv
+#' @importFrom survminer ggsurvplot surv_median
+#' @importFrom stringr str_to_title
 #' @noRd
 app_server <- function( input, output, session ) {
 
@@ -27,8 +30,44 @@ app_server <- function( input, output, session ) {
   })
 
   output$survival_plot <- renderPlot({
-    repo <- input$repo
-    random_ggplot() + labs(title = repo)
+    tmp <- repo_data() %>%
+      get_survival_fit()
+
+    fit <- survfit(Surv(time, status) ~ type, data = tmp)
+
+    plot <- ggsurvplot(
+      fit, # fitted survfit object
+      data = tmp,
+      break.x.by  = 10,
+      xlim        = c(0,180),
+      fun         = 'event',
+      surv.scale  = 'percent',
+      risk.table  = FALSE,
+      conf.int    = TRUE,
+      pval        = FALSE,
+      pval.method = FALSE,
+      surv.median.line = 'hv',
+      legend.labs = c('Issues', 'Pull Requests'),
+      ggtheme = theme_bw()      # Change ggplot2 theme
+    )
+
+    tbl <- surv_median(fit) %>%  mutate(across(is.numeric,round,1))
+    tbl$strata <- c('Issues', 'Pull Requests')
+    colnames(tbl) <- colnames(tbl) %>% str_to_title()
+
+    ttheme <- gridExtra::ttheme_default(base_size = 20)
+    g <- tibble::tibble(x = 0.95, y = 0.05, tbl = list(tbl))
+
+    plot$plot <- plot$plot +
+      theme(text = element_text(size=25)) +
+      ggpmisc::geom_table_npc(data = g, aes(npcx = x, npcy = y, label = tbl),
+                              table.theme = ttheme)
+      labs(title = 'Time-to-close for Issues & Pull Requests',
+           subtitle = 'For PRs, merged & closed are considered equivalent',
+           x = 'Time (days)',
+           y = 'Chance to be closed')
+
+    plot
   })
 
   output$timeseries_plot <- renderPlot({
@@ -58,16 +97,18 @@ app_server <- function( input, output, session ) {
       layout(yaxis=list(fixedrange=TRUE))
   })
 
-  output$summary_table <- renderTable({
+  output$summary_table <- DT::renderDT({
     req(input$repo)
     d <- repo_data()
 
     req(d$labels)
     d %>%
-      tidyr::separate_rows(labels,sep=',') %>%
-      dplyr::filter(labels != '') %>%
+      tidyr::unnest(labels) %>%
+      group_by(state) %>%
       dplyr::count(labels,sort=T) %>%
-      head(5)
+      tidyr::pivot_wider(names_from = state, values_from = n) %>%
+      rename(Label = labels)
+      DT::datatable(options = list(pageLength = 5, lengthChange = F, searching = F))
   })
 
   output$timeSinceLastUpdate <- renderUI({
@@ -84,64 +125,4 @@ app_server <- function( input, output, session ) {
       " hours ago."
     )
   })
-}
-
-
-#' @importFrom mongolite mongo
-#' @noRd
-setup_mongo <- function(collection) {
-  mongo(collection, url = mongo_string())
-}
-
-#' @keywords internal
-#' @export
-#' @importFrom glue glue
-#' @noRd
-mongo_string <- function() {
-  DBUSER <- Sys.getenv('DBUSER')
-  DBPASS <- Sys.getenv('DBPASS')
-  DBPORT <- Sys.getenv('DBPORT')
-  DBNAME <- Sys.getenv('DBNAME')
-
-  glue("mongodb://{DBUSER}:{DBPASS}@172.17.0.1:{DBPORT}/{DBNAME}")
-}
-
-#' Takes a repo name and gets the relevant dataframes from Mongo
-#' @importFrom glue glue
-#' @importFrom dplyr bind_rows
-#' @noRd
-get_repo_data <- function(repo) {
-  query <- glue('{{"repository.nameWithOwner":"{repo}"}}')
-  base_fields <- '{
-    "number":true,
-    "author":true,
-    "title":true,
-    "state":true,
-    "createdAt":true,
-    "closedAt":true,
-    "labels":true,
-    "repository":true
-  }'
-
-  db_issues <- setup_mongo('issues')
-  issues <- db_issues$find(query, base_fields) %>%
-    mutate(type = 'issue')
-  db_issues$disconnect() ; rm(db_issues)
-
-  # Add extra fields for PRs
-  new_fields <- jsonlite::parse_json(base_fields)
-  new_fields$mergedAt <- TRUE
-  new_fields$merged   <- TRUE
-  new_fields <- jsonlite::toJSON(new_fields, auto_unbox = T)
-
-  db_pulls <- setup_mongo('pulls')
-  pulls <- db_pulls$find(query, new_fields) %>%
-    mutate(type = 'pull')
-  db_pulls$disconnect() ; rm(db_pulls)
-
-  bind_rows(issues, pulls)
-}
-
-get_repos <- function() {
-  # later, use mapreduce
 }

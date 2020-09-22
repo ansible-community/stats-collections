@@ -1,3 +1,21 @@
+#' Takes a list of issues / PRs from Mongo and computes the survival
+#' fit for both types
+#'
+#' @keywords internal
+#' @export
+#' @importFrom lubridate ymd_hms
+#' @importFrom dplyr select mutate
+#' @noRd
+get_survival_fit <- function(d) {
+  d %>%
+    filter(type == 'issue' | baseRefName %in% c('main', 'master')) %>%
+    mutate(final_time = if_else(is.na(closedAt), Sys.time(), ymd_hms(closedAt)),
+           time       = difftime(final_time, ymd_hms(createdAt), units = 'days'),
+           status     = if_else(state == 'OPEN', 0, 1)
+    ) %>%
+    select(time, status, type)
+}
+
 #' Takes a list of issues / PRs from Mongo and counts them up by
 #' day/week/month for both opened (createdAt) and closed (closedAt) values.
 #'

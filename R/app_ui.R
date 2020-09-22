@@ -38,7 +38,7 @@ ui_body <- function() {
              ),
              column(width = 4,
                     box(width = NULL,
-                        tableOutput("summary_table")
+                        DT::dataTableOutput("summary_table")
                     )
              ),
              column(width = 4,
