@@ -107,7 +107,7 @@ app_server <- function( input, output, session ) {
       group_by(state) %>%
       dplyr::count(labels,sort=T) %>%
       tidyr::pivot_wider(names_from = state, values_from = n) %>%
-      rename(Label = labels)
+      rename(Label = labels) %>%
       DT::datatable(options = list(pageLength = 5, lengthChange = F, searching = F))
   })
 

@@ -31,13 +31,22 @@ get_issue_trends <- function(d) {
     mutate(createdAt = ymd_hms(createdAt),
            closedAt  = ymd_hms(closedAt))
 
+  this_week = as.Date(cut(Sys.Date(),'week'))
+
   bind_rows(
     bin_by_time(d, createdAt, 'week', 'opened'),
     bin_by_time(d, closedAt, 'week', 'closed')
   ) %>%
-    group_by(id) %>%
-    arrange(desc(date)) %>%
-    slice(2:9) # last 8 weeks, not counting this week as it's likely incomplete
+    # drop open/close for this week, likely incomplete
+    filter(date < this_week) %>%
+    # filter to timerange
+    filter(date >= this_week - lubridate::weeks(8)) %>%
+    # fill missing for ggplot2
+    tidyr::complete(tidyr::nesting(id),
+                    fill = list(n = 0),
+                    date = seq.Date(from = min(date),
+                                    to   = max(date),
+                                    by   ='week'))
 }
 
 #' Tidyeval function to do the actual date-cutting and counting on a given
