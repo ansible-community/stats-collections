@@ -3,15 +3,34 @@
 #'
 #' @keywords internal
 #' @export
+#' @importFrom dplyr select mutate
+#' @noRd
+issues_survival_fit <- function(d) {
+  d %>%
+    mutate(final_time = if_else(is.na(closedAt), Sys.time(), closedAt),
+           time       = difftime(final_time, createdAt, units = 'days'),
+           status     = if_else(state == 'OPEN', 0, 1)
+    ) %>%
+    select(time, status, type)
+}
+
+#' Takes a list of issues / PRs from Mongo and computes the survival
+#' fit for both types
+#'
+#' @keywords internal
+#' @export
 #' @importFrom lubridate ymd_hms
 #' @importFrom dplyr select mutate
 #' @noRd
-get_survival_fit <- function(d) {
+comments_survival_fit <- function(d) {
   d %>%
-    filter(type == 'issue' | baseRefName %in% c('main', 'master')) %>%
-    mutate(final_time = if_else(is.na(closedAt), Sys.time(), ymd_hms(closedAt)),
-           time       = difftime(final_time, ymd_hms(createdAt), units = 'days'),
-           status     = if_else(state == 'OPEN', 0, 1)
+    unnest_comments() %>%
+    mutate(status   = if_else(is.na(comments_author), 0, 1),
+           end_time = dplyr::case_when(
+             status == 1      ~ comments_createdAt,
+             state  == 'OPEN' ~ Sys.time(),
+             TRUE             ~ closedAt),
+           time     = difftime(end_time, createdAt, units = 'days')
     ) %>%
     select(time, status, type)
 }
@@ -26,10 +45,6 @@ get_survival_fit <- function(d) {
 #' @noRd
 get_issue_trends <- function(d) {
   # We start with a list of Issues and PRs
-
-  d <- d %>%
-    mutate(createdAt = ymd_hms(createdAt),
-           closedAt  = ymd_hms(closedAt))
 
   this_week = as.Date(cut(Sys.Date(),'week'))
 
@@ -65,4 +80,35 @@ bin_by_time <- function(dat,var,period='month',id=NULL) {
                         rlang::as_name(ensym(var)),
                         id)) %>%
     arrange(date)
+}
+
+#' List of known bots
+#'
+#' @keywords internal
+#' @noRd
+bot_list <- function() {
+  c(
+    'ansibullbot'
+  )
+}
+
+#' Take a list of issues and unnest the first comment by a different human
+#'
+#' @keywords internal
+#' @importFrom lubridate ymd_hms
+#' @noRd
+unnest_comments <- function(d) {
+  tibble::as_tibble(d) %>%
+    dplyr::mutate(comments = comments$nodes,
+           author   = author$login) %>%
+    dplyr::mutate(comments = purrr::map2(comments, author, ~{
+      if (nrow(.x) == 0) return(data.frame())
+      .x %>%
+        dplyr::mutate(author = author$login) %>%
+        dplyr::filter((author != .y) & (!(author %in% bot_list()))) %>%
+        head(1)
+      })
+    ) %>%
+    tidyr::unnest(c(comments), names_sep = '_', keep_empty = T) %>%
+    mutate(comments_createdAt = ymd_hms(comments_createdAt))
 }
