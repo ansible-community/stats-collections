@@ -97,7 +97,7 @@ app_server <- function( input, output, session ) {
       layout(yaxis=list(fixedrange=TRUE))
   })
 
-  output$summary_table <- DT::renderDT({
+  output$label_table <- DT::renderDT({
     req(input$repo)
     d <- repo_data()
 
@@ -108,7 +108,49 @@ app_server <- function( input, output, session ) {
       dplyr::count(labels,sort=T) %>%
       tidyr::pivot_wider(names_from = state, values_from = n) %>%
       rename(Label = labels) %>%
-      DT::datatable(options = list(pageLength = 5, lengthChange = F, searching = F))
+      DT::datatable(options = list(pageLength = 10,
+                                   lengthChange = F, searching = F))
+  })
+
+  output$issuesBox <- renderValueBox({
+    req(input$repo)
+    d <- repo_data()
+    valueBox(
+      d %>%
+        count(type,state) %>%
+        filter(type == 'issue' & state == 'OPEN') %>%
+        pull(n),
+      "Issues Open", icon = icon("exclamation-circle"),
+      color = "green"
+    )
+  })
+
+  output$pullsBox <- renderValueBox({
+    req(input$repo)
+    d <- repo_data()
+    valueBox(
+      d %>%
+        count(type,state) %>%
+        filter(type == 'pull' & state == 'OPEN') %>%
+        pull(n),
+      "Pull Requests Open", icon = icon("exchange-alt"),
+      color = "yellow"
+    )
+  })
+
+  output$contribBox <- renderValueBox({
+    req(input$repo)
+    d <- repo_data()
+
+    valueBox(
+      d %>%
+        distinct(author) %>%
+        count() %>%
+        pull(n),
+      "Unique Contributors", '(by Github login)',
+      icon = icon("users"),
+      color = "aqua"
+    )
   })
 
   output$timeSinceLastUpdate <- renderUI({

@@ -32,26 +32,6 @@ ui_header <- function() {
 ui_body <- function() {
   dashboardBody(
     fluidRow(
-      column(width = 10,
-             box(width = NULL, solidHeader = TRUE,
-                 plotOutput("survival_plot", height = 550)
-             ),
-             column(width = 4,
-                    box(width = NULL,
-                        DT::dataTableOutput("summary_table")
-                    )
-             ),
-             column(width = 4,
-                    box(width = NULL,
-                        plotOutput("timeseries_plot", height = 250)
-                    )
-             ),
-             column(width = 4,
-                    box(width = NULL,
-                        plotlyOutput("bar_plot", height = 250)
-                    )
-             )
-      ),
       column(width = 2,
              box(width = NULL, status = "warning",
                  selectInput("graph_type", "Metric",
@@ -72,8 +52,33 @@ ui_body <- function() {
                    br(),
                    "Source data updates daily."
                  )
+             ),
+             valueBoxOutput("issuesBox", width = 12),
+             valueBoxOutput("pullsBox", width = 12),
+             valueBoxOutput("contribBox", width = 12)
+      ),
+      column(width = 10,
+             column(width = 8,
+                    box(width = NULL, solidHeader = TRUE,
+                        plotOutput("survival_plot", height = 550)
+                    )
+             ),
+             column(width = 4,
+                    box(width = NULL,
+                        DT::dataTableOutput("label_table")
+                    )
+             ),
+             column(width = 6,
+                    box(width = NULL,
+                        plotOutput("timeseries_plot", height = 250)
+                    )
+             ),
+             column(width = 6,
+                    box(width = NULL,
+                        plotlyOutput("bar_plot", height = 250)
+                    )
              )
-      )
+      ),
     )
   )
 }
