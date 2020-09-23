@@ -5,22 +5,27 @@ Authors@R: person('Greg', 'Sutcliffe', email = 'gsutclif@redhat.com', role = c('
 Description: Shiny tools for the Ansible Collections.
 License: GPL-3
 Imports: 
-    config,
-    golem,
-    shiny,
-    processx,
     attempt,
-    glue,
-    htmltools,
-    shinydashboard,
-    shinipsum,
-    mongolite,
-    lubridate,
-    plotly,
-    survminer,
-    survival,
+    config,
+    dplyr,
+    DT,
+    ggplot2,
     ggpmisc,
-    DT
+    glue,
+    golem,
+    htmltools,
+    lubridate,
+    mongolite,
+    plotly,
+    processx,
+    purrr,
+    rlang,
+    shinipsum,
+    shiny,
+    shinydashboard,
+    stringr,
+    survival,
+    survminer
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
