@@ -20,19 +20,22 @@ mongo_string <- function() {
 
 #' Takes a repo name and gets the relevant dataframes from Mongo
 #' @importFrom glue glue
+#' @importFrom lubridate ymd_hms
 #' @importFrom dplyr bind_rows
 #' @noRd
 get_repo_data <- function(repo) {
   query <- glue('{{"repository.nameWithOwner":"{repo}"}}')
   base_fields <- '{
     "number":true,
-    "author":true,
+    "author.login":true,
     "title":true,
     "state":true,
     "createdAt":true,
     "closedAt":true,
     "labels":true,
-    "repository":true
+    "repository":true,
+    "comments.nodes.createdAt":true,
+    "comments.nodes.author.login":true
   }'
 
   db_issues <- setup_mongo('issues')
@@ -49,10 +52,13 @@ get_repo_data <- function(repo) {
 
   db_pulls <- setup_mongo('pulls')
   pulls <- db_pulls$find(query, new_fields) %>%
-    mutate(type = 'pull')
+    mutate(type = 'pull') %>%
+    filter(baseRefName %in% c('main', 'master'))
   db_pulls$disconnect() ; rm(db_pulls)
 
-  bind_rows(issues, pulls)
+  bind_rows(issues, pulls) %>%
+    mutate(createdAt = ymd_hms(createdAt),
+           closedAt  = ymd_hms(closedAt))
 }
 
 get_repos <- function() {
