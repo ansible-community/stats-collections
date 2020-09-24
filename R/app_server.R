@@ -19,11 +19,7 @@ app_server <- function( input, output, session ) {
   })
 
   output$repoSelect <- renderUI({
-    #later, see below
-    #repositories <- get_repos()
-    repositories <- c('ansible-collections/community.general',
-                      'ansible-collections/community.grafana',
-                      'ansible-collections/azure')
+    repositories <- get_repos()
 
     selectInput("repo", "Collection",
                 choices = repositories, selected = repositories[1])

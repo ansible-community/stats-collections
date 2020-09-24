@@ -11,7 +11,7 @@ issues_survival_plot <- function(d) {
   plot <- ggsurvplot(
     fit, # fitted survfit object
     data = tmp,
-    break.x.by  = 10,
+    break.x.by  = 30,
     fun         = 'event',
     surv.scale  = 'percent',
     risk.table  = FALSE,
@@ -55,7 +55,7 @@ comments_survival_plot <- function(d) {
   plot <- ggsurvplot(
     fit, # fitted survfit object
     data = tmp,
-    break.x.by  = 10,
+    break.x.by  = 30,
     fun         = 'event',
     surv.scale  = 'percent',
     risk.table  = FALSE,

@@ -63,4 +63,14 @@ get_repo_data <- function(repo) {
 
 get_repos <- function() {
   # later, use mapreduce
+  db_issues <- setup_mongo('issues')
+  r1 <- db_issues$distinct('repository.nameWithOwner')
+  db_issues$disconnect() ; rm(db_issues)
+
+  db_pulls <- setup_mongo('pulls')
+  r2 <- db_pulls$distinct('repository.nameWithOwner')
+  db_pulls$disconnect() ; rm(db_pulls)
+
+  d <- unique(c(r1,r2))
+  d[!(d %in% c('ansible/ansible'))] # too big!
 }
