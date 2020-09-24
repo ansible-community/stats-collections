@@ -53,7 +53,7 @@ get_repo_data <- function(repo) {
   db_pulls <- setup_mongo('pulls')
   pulls <- db_pulls$find(query, new_fields) %>%
     mutate(type = 'pull') %>%
-    filter(baseRefName %in% c('main', 'master'))
+    filter(baseRefName %in% c('main', 'master', 'develop'))
   db_pulls$disconnect() ; rm(db_pulls)
 
   bind_rows(issues, pulls) %>%
