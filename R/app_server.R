@@ -22,13 +22,15 @@ app_server <- function( input, output, session ) {
     repositories <- get_repos()
 
     selectInput("repo", "Collection",
-                choices = repositories, selected = repositories[1])
+                choices = repositories,
+                selected = 'ansible-collections/community.general')
   })
 
   output$survival_plot <- renderPlot({
     switch (input$graph_type,
       'ttclose'   = issues_survival_plot(repo_data()),
       'ttcomment' = comments_survival_plot(repo_data()),
+      'galaxy'    = galaxy_plot(input$repo)
     )
   })
 

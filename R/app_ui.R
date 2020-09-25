@@ -37,14 +37,11 @@ ui_body <- function() {
                  selectInput("graph_type", "Metric",
                              choices = c(
                                'Time-to-close Issues/PRs' = 'ttclose',
-                               'Time-to-first comment' = 'ttcomment'
+                               'Time-to-first comment' = 'ttcomment',
+                               'Galaxy releases' = 'galaxy'
                              ),
                              selected = 'ttclose'
-                 ),
-                 p(class = "text-muted",
-                   br(),
-                   "Time-to-release is still TODO"
-                 ),
+                 )
              ),
              box(width = NULL, status = "warning",
                  uiOutput("repoSelect"),

@@ -31,7 +31,7 @@ issues_survival_plot <- function(d) {
   g <- tibble::tibble(x = 0.95, y = 0.05, tbl = list(tbl))
 
   plot$plot <- plot$plot +
-    theme(text = element_text(size=25)) +
+    theme(text = element_text(size=20)) +
     ggpmisc::geom_table_npc(data = g, aes(npcx = x, npcy = y, label = tbl),
                             table.theme = ttheme) +
     labs(title = 'Time-to-close for Issues & Pull Requests',
@@ -75,7 +75,7 @@ comments_survival_plot <- function(d) {
   g <- tibble::tibble(x = 0.95, y = 0.05, tbl = list(tbl))
 
   plot$plot <- plot$plot +
-    theme(text = element_text(size=25)) +
+    theme(text = element_text(size=20)) +
     ggpmisc::geom_table_npc(data = g, aes(npcx = x, npcy = y, label = tbl),
                             table.theme = ttheme) +
     labs(title = 'Time-to-first comment for Issues & Pull Requests',
