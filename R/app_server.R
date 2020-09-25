@@ -64,7 +64,12 @@ app_server <- function( input, output, session ) {
     d <- repo_data()
 
     req(d$labels)
+
     d %>%
+      # Handle NULL vs empty lists, sigh
+      mutate(id3 = purrr::map_int(labels,length)) %>%
+      mutate(labels = if_else(id3==0,list(c()),labels)) %>%
+      # Now we can actually split & count
       tidyr::unnest(labels) %>%
       group_by(state) %>%
       dplyr::count(labels,sort=T) %>%
