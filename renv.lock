@@ -317,13 +317,6 @@
       "Repository": "CRAN",
       "Hash": "d0509913b27ea898189ee664b6030dc2"
     },
-    "dygraphs": {
-      "Package": "dygraphs",
-      "Version": "1.1.1.6",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "716869fffc16e282c118f8894e082a7d"
-    },
     "ellipsis": {
       "Package": "ellipsis",
       "Version": "0.3.1",
@@ -981,18 +974,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "308013098befe37484df72c39cf90d6e"
-    },
-    "shinipsum": {
-      "Package": "shinipsum",
-      "Version": "0.0.0.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "shinipsum",
-      "RemoteUsername": "Thinkr-open",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "e979574d75d1284e2b7d8a51c4ff20454b94e4cb",
-      "Hash": "f64ff6a67d5039ad9760e2f2696bac54"
     },
     "shiny": {
       "Package": "shiny",

@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny shinipsum ggplot2 plotly
+#' @import shiny ggplot2 plotly
 #' @importFrom dplyr select mutate across pull
 #' @importFrom purrr map
 #' @importFrom survival survfit Surv
@@ -27,6 +27,7 @@ app_server <- function( input, output, session ) {
   })
 
   output$survival_plot <- renderPlot({
+    req(input$repo)
     switch (input$graph_type,
       'ttclose'   = issues_survival_plot(repo_data()),
       'ttcomment' = comments_survival_plot(repo_data()),
@@ -35,9 +36,8 @@ app_server <- function( input, output, session ) {
   })
 
   output$timeseries_plot <- renderPlot({
-    random_ggplot('point') +
-      labs(title = 'Survial Trend still TBD',
-           subtitle = 'This is just a placeholder graph')
+    req(input$repo)
+    get_timeseries(input$repo)
   })
 
   output$bar_plot <- renderPlotly({
@@ -66,6 +66,7 @@ app_server <- function( input, output, session ) {
     d <- repo_data()
 
     req(d$labels)
+    req(purrr::map_int(d$labels,length) %>% sum() > 0)
 
     d %>%
       # Handle NULL vs empty lists, sigh
@@ -83,40 +84,39 @@ app_server <- function( input, output, session ) {
 
   output$issuesBox <- renderValueBox({
     req(input$repo)
-    d <- repo_data()
-    valueBox(
-      d %>%
+    d <- repo_data() %>%
         count(type,state) %>%
         filter(type == 'issue' & state == 'OPEN') %>%
-        pull(n),
-      "Issues Open", icon = icon("exclamation-circle"),
+        pull(n)
+    if (length(d) == 0) d <- 0
+    valueBox(
+      d, "Issues Open", icon = icon("exclamation-circle"),
       color = "green"
     )
   })
 
   output$pullsBox <- renderValueBox({
     req(input$repo)
-    d <- repo_data()
+    d <- repo_data() %>%
+      count(type,state) %>%
+      filter(type == 'pull' & state == 'OPEN') %>%
+      pull(n)
+    if (length(d) == 0) d <- 0
     valueBox(
-      d %>%
-        count(type,state) %>%
-        filter(type == 'pull' & state == 'OPEN') %>%
-        pull(n),
-      "Pull Requests Open", icon = icon("exchange-alt"),
+      d, "Pull Requests Open", icon = icon("exchange-alt"),
       color = "yellow"
     )
   })
 
   output$contribBox <- renderValueBox({
     req(input$repo)
-    d <- repo_data()
-
+    d <- repo_data() %>%
+      distinct(author) %>%
+      count() %>%
+      pull(n)
+    if (length(d) == 0) d <- 0
     valueBox(
-      d %>%
-        distinct(author) %>%
-        count() %>%
-        pull(n),
-      "Unique Contributors", '(by Github login)',
+      d , "Unique Contributors\n(by Github login)",
       icon = icon("users"),
       color = "aqua"
     )
@@ -130,7 +130,7 @@ app_server <- function( input, output, session ) {
       round(digits = 1,
         difftime(
           Sys.time(),
-          file.mtime('crawler/ansible-collections%community.general/issues.json'),
+          ymd_hms(setup_mongo('cron')$find()$last_run),
           units="hours")
       ),
       " hours ago."

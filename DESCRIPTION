@@ -21,7 +21,6 @@ Imports:
     processx,
     purrr,
     rlang,
-    shinipsum,
     shiny,
     shinydashboard,
     stringr,
