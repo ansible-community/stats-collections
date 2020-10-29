@@ -8,6 +8,7 @@
 # Requires:
 #   * System Environment - GITHUB_TOKEN for the GH GraphQL API
 
+library(mongolite)
 library(readr)
 library(purrr)
 library(dplyr)
@@ -15,12 +16,14 @@ library(dplyr)
 d <- read.csv(here::here('crawler-config/collections_list.csv'),
               stringsAsFactors = F)
 
+# Make sure we have Authentication for GitHub
 if (Sys.getenv('GITHUB_TOKEN') == '') {
   stop('Please set the GITHUB_TOKEN variable')
 }
 
 setwd(here::here('crawler'))
 
+# The actual crawler is written in Python, shell out to it
 scan_repo <- function(org, repo) {
   if (interactive()) print(paste0('\nScanning:',org,'/',repo))
   system2('./issues_and_prs.py',
@@ -34,6 +37,7 @@ d %>%
   select(Org, Repo) %>%
   mutate(exitcode = map2_int(.$Org, .$Repo, with_progress(scan_repo))) -> r
 
+# Likewise the code that imports the resulting JSON is in Python
 import_repo <- function(org, repo, type) {
   file = if_else(type == 'pulls', 'pull_requests.json', 'issues.json')
   path = paste0(org,'%',repo,'/', file)
@@ -45,6 +49,7 @@ import_repo <- function(org, repo, type) {
           stdout = F, stderr = F)
 }
 
+# Check the exitcode column is all 0, and then proceed
 if (sum(r$exitcode) == 0) {
   f <- r %>%
     mutate(exitcode_i = map2_int(.$Org, .$Repo, with_progress(import_repo), 'issues'),
@@ -53,6 +58,15 @@ if (sum(r$exitcode) == 0) {
   print('Error in GH scanning')
 }
 
-if (sum(f$exitcode) > 0) {
+# Again, check exitcode before updating the timestamps
+if (sum(f$exitcode) == 0) {
+
+  # TODO make this read the configuration
+  m <- mongo('cron',url = "mongodb://test:test@172.17.0.1:27017/ansible_collections")
+
+  m$update(
+    '{"_id":"crawler"}', sprintf('{"$set":{"last_run": "%s"}}', Sys.time()),
+    upsert = TRUE)
+} else {
   print('Error in Mongo imports')
 }
