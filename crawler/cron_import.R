@@ -9,6 +9,7 @@
 #   * System Environment - GITHUB_TOKEN for the GH GraphQL API
 
 library(mongolite)
+library(purrrogress)
 library(readr)
 library(purrr)
 library(dplyr)
