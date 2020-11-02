@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.0.2",
+    "Version": "4.0.3",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -737,6 +737,13 @@
       "Repository": "CRAN",
       "Hash": "406db947a3721d059635aaa04e6d051a"
     },
+    "parsetools": {
+      "Package": "parsetools",
+      "Version": "0.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "23c70da877be5c5ebf453f9e4409f369"
+    },
     "pbkrtest": {
       "Package": "pbkrtest",
       "Version": "0.4-8.6",
@@ -757,6 +764,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "404684bc4e3685007f9720adf13b06c1"
+    },
+    "pkgcond": {
+      "Package": "pkgcond",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "53e12f7023e53247091717ce3cadab2b"
     },
     "pkgconfig": {
       "Package": "pkgconfig",
@@ -792,6 +806,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c396592ecfe9e75cee1013533efafe34"
+    },
+    "postlogic": {
+      "Package": "postlogic",
+      "Version": "0.1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0e05ed4d05815426079ad12e8e681dc6"
     },
     "praise": {
       "Package": "praise",
@@ -841,6 +862,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "97def703420c8ab10d8f0e6c72101e02"
+    },
+    "purrrogress": {
+      "Package": "purrrogress",
+      "Version": "0.1.1",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "purrrogress",
+      "RemoteUsername": "halpo",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "23963cf7e92e176322d891bcff67f7c82103f98f",
+      "Hash": "e83283493355a576698acb7bbef0f789"
     },
     "quantreg": {
       "Package": "quantreg",
@@ -1058,6 +1091,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b227d13e29222b4574486cfcbde077fa"
+    },
+    "testextra": {
+      "Package": "testextra",
+      "Version": "0.1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dd6f8fa12ea5826c2c538d9d1c5b6d32"
     },
     "testthat": {
       "Package": "testthat",

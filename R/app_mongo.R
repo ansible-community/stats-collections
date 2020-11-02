@@ -5,8 +5,9 @@ setup_mongo <- function(collection) {
   mongo(collection, url = mongo_string())
 }
 
+#' Return the connection string of the MongoDB according to ENV vars
+#'
 #' @keywords internal
-#' @export
 #' @importFrom glue glue
 #' @noRd
 mongo_string <- function() {
@@ -22,6 +23,7 @@ mongo_string <- function() {
 #' @importFrom glue glue
 #' @importFrom lubridate ymd_hms
 #' @importFrom dplyr bind_rows
+#' @importFrom jsonlite parse_json toJSON
 #' @noRd
 get_repo_data <- function(repo) {
   query <- glue('{{"repository.nameWithOwner":"{repo}"}}')
@@ -44,11 +46,11 @@ get_repo_data <- function(repo) {
   db_issues$disconnect() ; rm(db_issues)
 
   # Add extra fields for PRs
-  new_fields <- jsonlite::parse_json(base_fields)
+  new_fields <- parse_json(base_fields)
   new_fields$mergedAt    <- TRUE
   new_fields$merged      <- TRUE
   new_fields$baseRefName <- TRUE
-  new_fields <- jsonlite::toJSON(new_fields, auto_unbox = T)
+  new_fields <- toJSON(new_fields, auto_unbox = T)
 
   db_pulls <- setup_mongo('pulls')
   pulls <- db_pulls$find(query, new_fields) %>%
@@ -61,6 +63,8 @@ get_repo_data <- function(repo) {
            closedAt  = ymd_hms(closedAt))
 }
 
+#' Gets a list of unique collection repo names from Mongo
+#' @noRd
 get_repos <- function() {
   # later, use mapreduce
   db_issues <- setup_mongo('issues')

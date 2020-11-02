@@ -27,7 +27,7 @@ issues_survival_plot <- function(d) {
   tbl$strata <- c('Issues', 'Pull Requests')
   colnames(tbl) <- colnames(tbl) %>% str_to_title()
 
-  ttheme <- gridExtra::ttheme_default(base_size = 20)
+  ttheme <- ttheme_default(base_size = 20)
   g <- tibble::tibble(x = 0.95, y = 0.05, tbl = list(tbl))
 
   plot$plot <- plot$plot +
@@ -46,6 +46,7 @@ issues_survival_plot <- function(d) {
 #'
 #' @keywords internal
 #' @param d input data.frame of issues and prs
+#' @importFrom gridExtra ttheme_default
 #' @noRd
 comments_survival_plot <- function(d) {
   tmp <- comments_survival_fit(d)
@@ -71,7 +72,7 @@ comments_survival_plot <- function(d) {
   tbl$strata <- c('Issues', 'Pull Requests')
   colnames(tbl) <- colnames(tbl) %>% str_to_title()
 
-  ttheme <- gridExtra::ttheme_default(base_size = 20)
+  ttheme <- ttheme_default(base_size = 20)
   g <- tibble::tibble(x = 0.95, y = 0.05, tbl = list(tbl))
 
   plot$plot <- plot$plot +

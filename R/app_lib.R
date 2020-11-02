@@ -2,7 +2,6 @@
 #' fit for both types
 #'
 #' @keywords internal
-#' @export
 #' @importFrom dplyr select mutate
 #' @noRd
 issues_survival_fit <- function(d) {
@@ -18,7 +17,6 @@ issues_survival_fit <- function(d) {
 #' fit for both types
 #'
 #' @keywords internal
-#' @export
 #' @importFrom lubridate ymd_hms
 #' @importFrom dplyr select mutate
 #' @noRd
@@ -39,9 +37,9 @@ comments_survival_fit <- function(d) {
 #' day/week/month for both opened (createdAt) and closed (closedAt) values.
 #'
 #' @keywords internal
-#' @export
 #' @importFrom lubridate ymd_hms
 #' @importFrom dplyr bind_rows mutate
+#' @importFrom tidyr complete nesting unnest
 #' @noRd
 get_issue_trends <- function(d) {
   # We start with a list of Issues and PRs
@@ -57,11 +55,11 @@ get_issue_trends <- function(d) {
     # filter to timerange
     filter(date >= this_week - lubridate::weeks(8)) %>%
     # fill missing for ggplot2
-    tidyr::complete(tidyr::nesting(id),
-                    fill = list(n = 0),
-                    date = seq.Date(from = min(date),
-                                    to   = max(date),
-                                    by   ='week'))
+    complete(nesting(id),
+             fill = list(n = 0),
+             date = seq.Date(from = min(date),
+                             to   = max(date),
+                             by   ='week'))
 }
 
 #' Tidyeval function to do the actual date-cutting and counting on a given
@@ -96,9 +94,10 @@ bot_list <- function() {
 #'
 #' @keywords internal
 #' @importFrom lubridate ymd_hms
+#' @importFrom tibble as_tibble
 #' @noRd
 unnest_comments <- function(d) {
-  tibble::as_tibble(d) %>%
+  as_tibble(d) %>%
     dplyr::mutate(comments = comments$nodes,
            author   = author$login) %>%
     dplyr::mutate(comments = purrr::map2(comments, author, ~{
@@ -109,6 +108,6 @@ unnest_comments <- function(d) {
         head(1)
       })
     ) %>%
-    tidyr::unnest(c(comments), names_sep = '_', keep_empty = T) %>%
+    unnest(c(comments), names_sep = '_', keep_empty = T) %>%
     mutate(comments_createdAt = ymd_hms(comments_createdAt))
 }

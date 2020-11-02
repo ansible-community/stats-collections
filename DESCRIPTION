@@ -25,7 +25,11 @@ Imports:
     shinydashboard,
     stringr,
     survival,
-    survminer
+    survminer,
+    gridExtra,
+    tidyr,
+    tibble,
+    jsonlite
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
