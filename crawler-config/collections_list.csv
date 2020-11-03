@@ -15,7 +15,7 @@ https://github.com,ansible-collections,community.docker,docker,FALSE,
 https://github.com,ansible-collections,community.general,,TRUE,
 https://github.com,ansible-collections,community.grafana,grafana,FALSE,
 https://github.com,ansible-collections,community.kubernetes,kubernetes|k8s,FALSE,kubernetes
-https://github.com,ansible-collections,community.kubevirt,,kubevirt,FALSE,
+https://github.com,ansible-collections,community.kubevirt,kubevirt,FALSE,
 https://github.com,ansible-collections,community.libvirt,,TRUE,
 https://github.com,ansible-collections,community.molecule,,TRUE
 https://github.com,ansible-collections,community.mongodb,mongo,FALSE,
