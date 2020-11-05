@@ -54,7 +54,8 @@ cron_trend_close <- function() {
   # Process the survival curves
   get_repos() %>%
     tibble::as_tibble_col(column_name = 'repo') %>%
-    mutate(data = map(repo, possibly_get)) %>%
+    mutate(data = map(repo, possibly_get)) %>% # tiny repos can fail this step
+    filter(!is.na(data)) %>%
     mutate(types = map(data, ~{unique(.x$type)})) %>%
     mutate(fit = map(data, issues_survival_fit)) %>%
     mutate(fit = map(fit, ~{survfit(Surv(time, status) ~ type, data = .x)})) %>%
@@ -88,9 +89,9 @@ get_75_line <- function(fit, types) {
   d %>%
     dplyr::filter(surv < 0.25) %>%
     dplyr::group_by(strata) %>%
-    dplyr::summarise(time = head(time,1)) %>%
+    dplyr::summarise(time = head(time,1), .groups = 'drop') %>%
     dplyr::mutate(strata = stringr::str_remove(strata,'^type=')) %>%
-    dplyr::right_join(defaults) %>%
+    dplyr::right_join(defaults, by = 'strata') %>%
     tidyr::pivot_wider(names_from = 'strata', values_from = 'time')
 }
 

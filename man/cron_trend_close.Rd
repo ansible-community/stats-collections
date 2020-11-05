@@ -2,9 +2,7 @@
 % Please edit documentation in R/app_timeseries.R
 \name{cron_trend_close}
 \alias{cron_trend_close}
-\title{Call this function from the commandline (i.e. cron) to
-store the current time-to-close metrics to the DB for
-all known repos in the DB}
+\title{Cronjob for time-to-close Issues/PRs}
 \usage{
 cron_trend_close()
 }
@@ -12,4 +10,11 @@ cron_trend_close()
 Call this function from the commandline (i.e. cron) to
 store the current time-to-close metrics to the DB for
 all known repos in the DB
+}
+\details{
+You'll want an environment file with the Mongo connection info
+in it, and then call
+
+sudo docker run --env-file /path/to/cron.env -it \
+  --rm collections:tag R -e "ansible.collections::cron_trend_close()"
 }
