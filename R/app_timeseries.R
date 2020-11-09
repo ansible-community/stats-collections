@@ -3,9 +3,17 @@
 #' @keywords internal
 #' @param repo the id of the timeseries
 #' @noRd
-plot_timeseries <- function(repo) {
-  d <- setup_mongo('trend_close')
-  d <- d$find(glue('{{"_id":"{repo}"}}'))#$timeseries$data[[1]]
+plot_timeseries <- function(repo, graph) {
+  if (graph == 'galaxy') return(FALSE)
+  if (graph == 'ttclose') {
+    d   <- 'trend_close'
+    txt <- 'Time to close'
+  } else {
+    d   <- 'trend_comment'
+    txt <- 'Time to comment'
+  }
+  d <- setup_mongo(d)
+  d <- d$find(glue('{{"_id":"{repo}"}}'))
 
   data.frame(
     date  = names(d),
@@ -22,15 +30,21 @@ plot_timeseries <- function(repo) {
   if (nrow(d) == 0) { return(FALSE)}
 
   d %>%
-    ggplot(aes(date,value,colour=type)) +
+    rename(Date = date, Value = value) %>%
+    ggplot(aes(Date,Value,colour=type)) +
     facet_wrap(~type, scales = 'free_y') +
-    geom_point(size=3) +
+    geom_point() +
     geom_smooth() +
-    guides(color = F) +
-    scale_x_date(date_breaks = '1 week', date_labels = '%d/%m') +
-    theme(text = element_text(size=20)) +
-    labs(title = 'Trend in time-to-close (weekly, from above)',
-         x = NULL, y = '75% Time-to-close')
+ #   scale_x_date(date_breaks = '1 week', date_labels = '%d/%m') +
+    labs(title = glue('Trend in {txt} (weekly, from above)'),
+         x = NULL, y = glue('75% {txt}')) -> p
+
+  ggplotly(p, tooltip = c('Date','Value')) %>%
+    config(modeBarButtonsToRemove = list('select2d','lasso2d'),
+           displaylogo = FALSE, scrollZoom = FALSE) %>%
+    layout(xaxis=list(fixedrange=TRUE)) %>%
+    layout(yaxis=list(fixedrange=TRUE)) %>%
+    layout(showlegend=FALSE)
 }
 
 #' Cronjob for time-to-close Issues/PRs
@@ -49,24 +63,37 @@ plot_timeseries <- function(repo) {
 #' @export
 cron_trend_close <- function() {
   # Safe Purrr::map
-  possibly_get <- possibly(get_repo_data,NA)
+  possibly_get   <- possibly(get_repo_data,NA)
+  possibly_fit_i <- possibly(issues_survival_fit,NA)
+  possibly_fit_c <- possibly(comments_survival_fit,NA)
+  fit_func <- function(fit) {
+    if (is.na(fit)) {
+      NA
+    } else {
+      survfit(Surv(time, status) ~ type, data = fit)
+    }
+  }
 
   # Process the survival curves
   get_repos() %>%
     tibble::as_tibble_col(column_name = 'repo') %>%
     mutate(data = map(repo, possibly_get)) %>% # tiny repos can fail this step
     filter(!is.na(data)) %>%
-    mutate(types = map(data, ~{unique(.x$type)})) %>%
-    mutate(fit = map(data, issues_survival_fit)) %>%
-    mutate(fit = map(fit, ~{survfit(Surv(time, status) ~ type, data = .x)})) %>%
-    mutate(summary = map2(fit, types, get_75_line)) %>%
-    select(repo, summary) %>%
-    tidyr::unnest(summary) %>%
+    mutate(types = map(data, ~{unique(.x$type)}),
+           fit_i = map(data, possibly_fit_i),
+           fit_c = map(data, possibly_fit_c)) %>%
+    mutate(fit_i = map(fit_i, fit_func),
+           fit_c = map(fit_c, fit_func)) %>%
+    mutate(close   = map2(fit_i, types, get_75_line),
+           comment = map2(fit_c, types, get_75_line)) %>%
+    select(repo, close, comment) %>%
+    tidyr::unnest(c(close,comment), names_sep='_') %>%
     mutate(date = Sys.Date()) -> todays_data
 
   # Store it
   for (r in 1:nrow(todays_data)) {
-    update_db_trend_close(todays_data[r,])
+    update_db_trend(todays_data[r,c(1,2,3,6)],'trend_close')
+    update_db_trend(todays_data[r,c(1,4,5,6)],'trend_comment')
   }
 }
 
@@ -77,6 +104,11 @@ cron_trend_close <- function() {
 #' @param types the strata for the survival fit
 #' @noRd
 get_75_line <- function(fit, types) {
+
+  if (is.na(fit)) {
+    return(data.frame(pull = NA, issue = NA))
+  }
+
   defaults <- data.frame(strata = c('issue','pull')) # will bring in NAs as needed
   d <- data.frame(time = fit$time,
                   surv = fit$surv)
@@ -95,19 +127,19 @@ get_75_line <- function(fit, types) {
     tidyr::pivot_wider(names_from = 'strata', values_from = 'time')
 }
 
-#' Calculate the 75% quantile for a given survival dataset
+#' Load the current values into Mongo
 #'
 #' @keywords internal
 #' @param df the incoming data
 #' @noRd
-update_db_trend_close <- function(df) {
-  setup_mongo('trend_close')$update(
+update_db_trend <- function(df,table) {
+  setup_mongo(table)$update(
     glue::glue('{{"_id":"{df$repo}" }}'),
     glue::glue('{{
                   "$set": {{
                     "{df$date}": {{
-                      "issue": "{df$issue}",
-                      "pull": "{df$pull}"
+                      "pull":  "{df[2]}",
+                      "issue": "{df[3]}"
                     }}
                   }}
                 }}'),

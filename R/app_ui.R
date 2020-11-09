@@ -68,7 +68,7 @@ ui_body <- function() {
              ),
              column(width = 6,
                     box(width = NULL,
-                        plotOutput("timeseries_plot", height = 250)
+                        plotlyOutput("timeseries_plot", height = 250)
                     )
              ),
              column(width = 6,

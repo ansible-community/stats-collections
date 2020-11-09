@@ -35,9 +35,9 @@ app_server <- function( input, output, session ) {
     )
   })
 
-  output$timeseries_plot <- renderPlot({
+  output$timeseries_plot <- renderPlotly({
     req(input$repo)
-    plot_timeseries(input$repo)
+    plot_timeseries(input$repo,input$graph_type)
   })
 
   output$bar_plot <- renderPlotly({
