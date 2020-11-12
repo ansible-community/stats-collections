@@ -28,11 +28,17 @@ app_server <- function( input, output, session ) {
 
   output$survival_plot <- renderPlot({
     req(input$repo)
-    switch (input$graph_type,
+    plot <- switch (input$graph_type,
       'ttclose'   = issues_survival_plot(repo_data()),
       'ttcomment' = comments_survival_plot(repo_data()),
       'galaxy'    = galaxy_plot(input$repo)
     )
+    if (is_false(plot)) {
+      text(x = 0.5, y = 0.5, paste("No data to display"),
+           cex = 1.6, col = "black")
+    } else {
+      print(plot)
+    }
   })
 
   output$timeseries_plot <- renderPlotly({
@@ -50,7 +56,7 @@ app_server <- function( input, output, session ) {
       scale_fill_manual(name = NULL,
                           values = colours,
                           labels = c("Closed","Opened")) +
-      labs(title = 'Issues & PRs Opened/Closed',
+      labs(title = 'Issues & PRs Opened/Closed (last 8 weeks)',
            x = 'Week Commencing', y = NULL) +
       theme(legend.position = 'top')
 

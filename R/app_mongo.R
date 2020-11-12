@@ -24,6 +24,7 @@ mongo_string <- function() {
 #' @importFrom lubridate ymd_hms
 #' @importFrom dplyr bind_rows
 #' @importFrom jsonlite parse_json toJSON
+#' @importFrom tibble tibble
 #' @noRd
 get_repo_data <- function(repo) {
   query <- glue('{{"repository.nameWithOwner":"{repo}"}}')
@@ -53,10 +54,16 @@ get_repo_data <- function(repo) {
   new_fields <- toJSON(new_fields, auto_unbox = T)
 
   db_pulls <- setup_mongo('pulls')
-  pulls <- db_pulls$find(query, new_fields) %>%
-    mutate(type = 'pull') %>%
-    filter(baseRefName %in% c('main', 'master', 'develop'))
+  pulls <- db_pulls$find(query, new_fields)
   db_pulls$disconnect() ; rm(db_pulls)
+
+  if (nrow(pulls) == 0) {
+    pulls <- tibble()
+  } else {
+    pulls <- pulls %>%
+      mutate(type = 'pull') %>%
+      filter(baseRefName %in% c('main', 'master', 'develop'))
+  }
 
   bind_rows(issues, pulls) %>%
     mutate(createdAt = ymd_hms(createdAt),

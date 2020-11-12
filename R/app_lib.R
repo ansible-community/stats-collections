@@ -22,15 +22,20 @@ issues_survival_fit <- function(d) {
 #' @noRd
 comments_survival_fit <- function(d) {
   d %>%
-    unnest_comments() %>%
-    mutate(status   = if_else(is.na(comments_author), 0, 1),
-           end_time = dplyr::case_when(
-             status == 1      ~ comments_createdAt,
-             state  == 'OPEN' ~ Sys.time(),
-             TRUE             ~ closedAt),
-           time     = difftime(end_time, createdAt, units = 'days')
-    ) %>%
-    select(time, status, type)
+    unnest_comments() -> tmp
+  if (nrow(tmp) == 0) {
+    tmp
+  } else {
+    tmp %>%
+      mutate(status   = if_else(is.na(comments_author), 0, 1),
+             end_time = dplyr::case_when(
+               status == 1      ~ comments_createdAt,
+               state  == 'OPEN' ~ Sys.time(),
+               TRUE             ~ closedAt),
+             time     = difftime(end_time, createdAt, units = 'days')
+      ) %>%
+      select(time, status, type)
+  }
 }
 
 #' Takes a list of issues / PRs from Mongo and counts them up by
@@ -43,7 +48,6 @@ comments_survival_fit <- function(d) {
 #' @noRd
 get_issue_trends <- function(d) {
   # We start with a list of Issues and PRs
-
   this_week = as.Date(cut(Sys.Date(),'week'))
 
   bind_rows(
@@ -53,7 +57,11 @@ get_issue_trends <- function(d) {
     # drop open/close for this week, likely incomplete
     filter(date < this_week) %>%
     # filter to timerange
-    filter(date >= this_week - lubridate::weeks(8)) %>%
+    filter(date >= this_week - lubridate::weeks(8)) -> tmp
+
+  if (nrow(tmp) == 0) return(tibble(date=1,n=1,id=1,.rows=0))
+
+  tmp %>%
     # fill missing for ggplot2
     complete(nesting(id),
              fill = list(n = 0),
@@ -71,7 +79,9 @@ get_issue_trends <- function(d) {
 #' @noRd
 bin_by_time <- function(dat,var,period='month',id=NULL) {
   dat %>%
-    filter(!(is.na({{var}}))) %>%
+    filter(!(is.na({{var}}))) -> tmp
+  if (nrow(tmp) == 0) return(data.frame())
+  tmp %>%
     mutate(date = as.Date(cut({{var}},period))) %>%
     count(date) %>%
     mutate(id = if_else(is.null(id),
@@ -97,6 +107,8 @@ bot_list <- function() {
 #' @importFrom tibble as_tibble
 #' @noRd
 unnest_comments <- function(d) {
+  if (is.null(unlist(d$comments$nodes))) return(data.frame())
+
   as_tibble(d) %>%
     dplyr::mutate(comments = comments$nodes,
            author   = author$login) %>%

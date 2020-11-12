@@ -4,7 +4,10 @@
 #' @param repo the id of the timeseries
 #' @noRd
 plot_timeseries <- function(repo, graph) {
-  if (graph == 'galaxy') return(FALSE)
+  if (graph == 'galaxy') {
+    return(plotly_empty() %>% add_text(x=1, y=1, size = I(100), text = 'N/A'))
+  }
+
   if (graph == 'ttclose') {
     d   <- 'trend_close'
     txt <- 'Time to close'
