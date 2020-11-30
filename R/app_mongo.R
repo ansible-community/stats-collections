@@ -15,8 +15,9 @@ mongo_string <- function() {
   DBPASS <- Sys.getenv('DBPASS')
   DBPORT <- Sys.getenv('DBPORT')
   DBNAME <- Sys.getenv('DBNAME')
+  DBHOST <- Sys.getenv('DBHOST')
 
-  glue("mongodb://{DBUSER}:{DBPASS}@172.17.0.1:{DBPORT}/{DBNAME}")
+  glue("mongodb://{DBUSER}:{DBPASS}@{DBHOST}:{DBPORT}/{DBNAME}")
 }
 
 #' Takes a repo name and gets the relevant dataframes from Mongo
