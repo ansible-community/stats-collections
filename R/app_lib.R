@@ -23,19 +23,16 @@ issues_survival_fit <- function(d) {
 comments_survival_fit <- function(d) {
   d %>%
     unnest_comments() -> tmp
-  if (nrow(tmp) == 0) {
-    tmp
-  } else {
-    tmp %>%
-      mutate(status   = if_else(is.na(comments_author), 0, 1),
-             end_time = dplyr::case_when(
-               status == 1      ~ comments_createdAt,
-               state  == 'OPEN' ~ Sys.time(),
-               TRUE             ~ closedAt),
-             time     = difftime(end_time, createdAt, units = 'days')
-      ) %>%
-      select(time, status, type)
-  }
+
+  tmp %>%
+    mutate(status   = if_else(is.na(comments_author), 0, 1),
+           end_time = dplyr::case_when(
+             status == 1      ~ comments_createdAt,
+             state  == 'OPEN' ~ Sys.time(),
+             TRUE             ~ closedAt),
+           time     = difftime(end_time, createdAt, units = 'days')
+    ) %>%
+    select(time, status, type)
 }
 
 #' Takes a list of issues / PRs from Mongo and counts them up by

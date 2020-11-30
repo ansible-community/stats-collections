@@ -70,12 +70,9 @@ cron_trend_close <- function() {
   possibly_fit_i <- possibly(issues_survival_fit,NA)
   possibly_fit_c <- possibly(comments_survival_fit,NA)
   fit_func <- function(fit) {
-    if (is.na(fit)) {
-      NA
-    } else {
-      survfit(Surv(time, status) ~ type, data = fit)
-    }
+    survfit(Surv(time, status) ~ type, data = fit)
   }
+  possibly_fit_func <- possibly(fit_func,NA)
 
   # Process the survival curves
   get_repos() %>%
@@ -85,8 +82,8 @@ cron_trend_close <- function() {
     mutate(types = map(data, ~{unique(.x$type)}),
            fit_i = map(data, possibly_fit_i),
            fit_c = map(data, possibly_fit_c)) %>%
-    mutate(fit_i = map(fit_i, fit_func),
-           fit_c = map(fit_c, fit_func)) %>%
+    mutate(fit_i = map(fit_i, possibly_fit_func),
+           fit_c = map(fit_c, possibly_fit_func)) %>%
     mutate(close   = map2(fit_i, types, get_75_line),
            comment = map2(fit_c, types, get_75_line)) %>%
     select(repo, close, comment) %>%
