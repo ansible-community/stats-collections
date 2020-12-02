@@ -54,5 +54,9 @@ https://github.com,ansible-collections,vmware_rest,vmware,FALSE,vmware
 https://github.com,ansible-collections,vmware,vmware,FALSE,vmware
 https://github.com,ansible-collections,vyos,vyos,FALSE,
 https://github.com,containers,ansible-podman-collections,,TRUE,
+https://github.com,cloudscale-ch,ansible-collection-cloudscale,cloudscale,FALSE,
+https://github.com,ngine-io,ansible-collection-cloudstack,cloudstack,FALSE,
+https://github.com,ngine-io,ansible-collection-exoscale,exoscale,FALSE,
+https://github.com,ngine-io,ansible-collection-vultr,vultr,FALSE,
 https://github.com,openstack,ansible-collections-openstack,openstack,FALSE,
 https://github.com,theforeman,foreman-ansible-modules,,TRUE,
