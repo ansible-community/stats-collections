@@ -65,6 +65,7 @@ https://github.com,ansible-collections,skydive,skydive,FALSE,
 https://github.com,ansible-collections,trendmicro.deepsec,,TRUE,
 https://github.com,ansible-collections,symantec.epm,,TRUE,
 https://github.com,ansible-collections,vmware_rest,vmware,FALSE,vmware
+https://github.com,ansible-collections,vmware_rest_code_generator,vmware,FALSE,vmware
 https://github.com,ansible-collections,vmware,vmware,FALSE,vmware
 https://github.com,ansible-collections,vyos,vyos,FALSE,
 https://github.com,ansible-collections,splunk.es,,TRUE,splunk
